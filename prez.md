@@ -137,11 +137,82 @@ header-includes: |
 \embedvideo{\includegraphics[page=1,height=0.7\textheight]{img/interface-onyxia.png}}{img/test.mp4}
 ```
 
-## Comment ça marche ? 
+## Fonctionnement: configuration des services
 
 * Utilisation de helm pour le lancement des services
-* Utilisation du `schema.json` pour l'affichage du formulaire
+* Utilisation du `values.schema.json` pour l'affichage du formulaire
+
+```json
+"accessKeyId": {
+  "description": "AWS Access Key",
+  "type": "string",
+  "x-form": {
+    "value": "{{s3.AWS_ACCESS_KEY_ID}}"
+  },
+  "hidden": {
+    "value": false,
+    "path": "s3/enabled"
+  }
+}
+```
+
+## Fonctionnement: mécanisme de découverte
+
+Utilisation de la fonction `lookup` de Helm
+
+```go
+{{ range $index, $secret := (lookup "v1" "Secret" $namespace "").items }}
+{{- if (index $secret "metadata" "annotations") }}
+{{- if and (index $secret "metadata" "annotations" "onyxia/discovery") (eq "mongodb" (index $secret "metadata"
+"annotations" "onyxia/discovery" | toString)) }}
+```
+
+## Autres fonctionnalités 
+
+* Gestion de projet/groupe
+* Possibilité d'avoir son propre catalogue (*simple* dépot de chart Helm)
+* Restriction sur le lancement de service 
+
+```yaml
+ roles:
+        - roleName: vip
+          files:
+            - relativePath: nodeSelector-gpu.json
+              content: |
+                {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  [...]
+                      "default": "NVIDIA-A2",
+                      "enum": ["NVIDIA-A2", "Tesla-T4", "NVIDIA-H100-PCIe"]
+                    }
+                  },
+                  "additionalProperties": false
+                }    
+```
+
 # L'instance SSPCLOUD
 
+###
+
+* Instance d'onyxia maintenue par l'Insee
+* Expérimentation sur données non sensible, partage de connaissances (formations)
+* Ouverte d'abord au data scientist du service statistique public, étendue à l'ensemble des agents de l'état et aux étudiants
+
+###
+
+* Bac à sable ML/IA pour la statistique publique européenne et canadienne
+* 1000 utilisateurs quotidiens (7000 inscrits)
+
+
 # Installation et utilisation d'Onyxia au GENES
+
+### Création d'un datalab
+
+* Service de gestion du code ➡️ gitea
+* Service de stockage ➡️ minio
+* Accessible depuis l'ensemble des utilisateurs du GENES ➡️ OIDC
+* Plateforme d'execution des traitements ➡️ Kubernetes
+* Point d'entrée ➡️ Onyxia
+
+### Kubernetes
 
