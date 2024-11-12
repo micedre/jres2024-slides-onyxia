@@ -11,17 +11,18 @@ fonttheme: "professionalfonts"
 mainfont: NotoSans
 mainfontfallback:
   - "NotoColorEmoji:mode=harf"
-fontsize: 12pt
+fontsize: 10pt
 linkstyle: bold
+colorlinks: true
 aspectratio: 169
 titlegraphic: img/logo-jres-mini1.png
 logo: img/logo-jres-mini2.png
 lang: fr-FR
-section-titles: false
+section-titles: true
 toc: true
 header-includes: |
   \usepackage{media9}
-  \molochset{titleformat=allsmallcaps,numbering=none,progressbar=frametitle,sectionpage=none}
+  \molochset{titleformat=allsmallcaps,numbering=none,progressbar=frametitle,sectionpage=progressbar,block=fill,numbering=fraction}
   
 ---
 
@@ -91,18 +92,24 @@ header-includes: |
 
 ## Nouvelle solution
 
+::: {.block}
+###
 - Moins couteuse pour l'exploitation
 - Proposant une meilleure allocation des ressources et leur partage
 - Favorisant la reproductibilité
 - Favorisant les bonnes pratiques de séparation code/data/traitement
+:::
 
-➡️
+➡️ 
 
 ![](img/kube-git-s3-transparent.png){height=50%}
 
 ## Mais
 
+::: {.block}
+###
 **Comment embarquer les utilisateurs ?**
+:::
 
 ![](img/chercheur-perplexe-transparent.png){height=50%}
 
@@ -124,18 +131,19 @@ header-includes: |
 
 ## Onyxia, c'est quoi ?
 
-![](img/interface-onyxia.png){height=50%}
-
-
-
 - Une application web permettant le déploiement de service sur cluster kubernetes
 - Un catalogue de services spécialement construit pour l'intégration de services externes (Stockage Objet, Gestion de secrets, Git...)
+- Un catalogue de formation
+
+![](img/interface-onyxia.png){height=50%}
+
 
 ## Démo
 
 ```{=latex}
-\embedvideo{\includegraphics[page=1,height=0.7\textheight]{img/interface-onyxia.png}}{img/test.mp4}
+\embedvideo{\includegraphics[page=1,height=0.8\textheight]{img/interface-onyxia.png}}{img/test.mp4}
 ```
+[Lien vers la vidéo](http://minio.lab.sspcloud.fr/h4njlg/public/test.mp4)
 
 ## Fonctionnement: configuration des services
 
@@ -169,28 +177,29 @@ Utilisation de la fonction `lookup` de Helm
 
 ## Autres fonctionnalités 
 
+* Lien partageable pour lancement de services
 * Gestion de projet/groupe
 * Possibilité d'avoir son propre catalogue (*simple* dépot de chart Helm)
 * Restriction sur le lancement de service 
 
 ```yaml
  roles:
-        - roleName: vip
-          files:
-            - relativePath: nodeSelector-gpu.json
-              content: |
-                {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
-                  [...]
-                      "default": "NVIDIA-A2",
-                      "enum": ["NVIDIA-A2", "Tesla-T4", "NVIDIA-H100-PCIe"]
-                    }
-                  },
-                  "additionalProperties": false
-                }    
+  - roleName: vip
+    files:
+      - relativePath: nodeSelector-gpu.json
+        content: |
+          {
+           "$schema": "http://json-schema.org/draft-07/schema#",
+            [...]
+            "default": "NVIDIA-A2",
+            "enum": ["NVIDIA-A2", "Tesla-T4", "NVIDIA-H100-PCIe"]
+            [...]
+          }    
 ```
 
 # L'instance SSPCLOUD
+
+[**https://datalab.sspcloud.fr**](https://datalab.ssploud.fr)
 
 ###
 
@@ -203,16 +212,113 @@ Utilisation de la fonction `lookup` de Helm
 * Bac à sable ML/IA pour la statistique publique européenne et canadienne
 * 1000 utilisateurs quotidiens (7000 inscrits)
 
+## Catalogue de formation
+
+![](img/formations-sspcloud.png){height=75%}
+
 
 # Installation et utilisation d'Onyxia au GENES
 
-### Création d'un datalab
+## Création d'un datalab
 
-* Service de gestion du code ➡️ gitea
-* Service de stockage ➡️ minio
-* Accessible depuis l'ensemble des utilisateurs du GENES ➡️ OIDC
-* Plateforme d'execution des traitements ➡️ Kubernetes
-* Point d'entrée ➡️ Onyxia
+* Service de gestion du code ➡️ **gitea**
+* Service de stockage objet ➡️ **minio**
+* Accessible depuis l'ensemble des utilisateurs du GENES ➡️ **OIDC/Keycloak**
+* Plateforme d'execution des traitements ➡️ **Kubernetes**
+* Point d'entrée ➡️ **Onyxia**
 
-### Kubernetes
+## Kubernetes
 
+::: columns
+
+:::: column
+
+* Installation avec KubeSpray (ansible)
+* Control Plane : 3 VM
+* Ingress : 2 VM
+* 4 serveurs physiques :
+  * 200 CPU
+  * 1 To RAM
+  * 1 GPU A100 40Gbps (7 slices)
+* longhorn pour les volumes
+* argo-cd pour le déploiement de services
+* Publication http/https avec un Ingress Nginx
+* Monitoring avec prometheus/grafana
+
+::::
+
+:::: column
+
+![](img/ressources-onyxia-genes.png)
+
+::::
+
+:::
+
+
+## Déploiement d'Onyxia
+
+### 
+* Keycloak pour l'authentification (utilisation de l'annuaire **GENES**)
+* Minio pour stockage S3. Policy pour 1 bucket par utilisateur
+* Configuration de l'api Kubernetes pour 1 namespace par utilisateur
+
+
+###
+* Onyxia déployé à partir du chart helm fourni
+* Utilisation des catalogues par défaut
+* Personnalisation minimale
+
+## Déploiement d'onyxia
+
+![](img/onyxia-genes.png){height=80%}
+
+## Utilisation du datalab
+
+:::: columns
+
+::: {.column width=50%}
+### Déploiement d'application [oTree](https://www.otree.org/) pour le [laboratoire d'expérimentations sociales du CREST](https://ipel.crest.fr) :
+ - Utilisation de gitea, drone-ci et argocd pour développement collaboratif et déploiement en continue sur kubernetes sous forme de chart helm
+
+### Démarrage d'environnement de formation préconfiguré 
+ - Lien autosuffisant vers un service Onyxia ((python + extensions + notebooks) donné aux stagiaire
+
+
+
+:::
+
+::: {.column width=50%}
+
+### Business Data Challenge de l'ENSAE
+ - Données sur Minio en lecture seule
+ - Chaque équipe a son espace de travail collaboratif sur Onyxia
+
+### Ajout de nouveaux services au catalogue
+ - vscode-c++
+ - limesurvey, wordpress
+
+:::
+
+::::
+
+## Challenges et perspectives
+
+### Challenges
+
+- Compétences Kubernetes à acquérir
+- Accompagnement des utilisateurs (*Comment j'accède en ssh ?*)
+- Expliuer les bonnes pratiques
+- Maitriser l'ensemble
+
+### Perspectives
+
+- Réservation de ressources pour projets (GPU)
+- Ajout de nouveaux services au catalogues
+- Reflexion sur logiciels non web/non libres (matlab/sas)
+- Ajout de formations spécifiques
+
+
+## Conclusion
+
+**Pour le GENES, Onyxia a permis une modernisation franche de son offre scientifique.**
