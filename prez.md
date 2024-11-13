@@ -94,7 +94,8 @@ header-includes: |
 
 ::: {.block}
 ###
-- Moins couteuse pour l'exploitation
+
+- Moins couteuse pour l'exploitation (uniformisation)
 - Proposant une meilleure allocation des ressources et leur partage
 - Favorisant la reproductibilité
 - Favorisant les bonnes pratiques de séparation code/data/traitement
@@ -141,7 +142,7 @@ header-includes: |
 ## Démo
 
 ```{=latex}
-\embedvideo{\includegraphics[page=1,height=0.8\textheight]{img/interface-onyxia.png}}{img/test.mp4}
+\embedvideo{\includegraphics[page=1,height=0.8\textheight]{img/interface-onyxia.png}}{img/demo-onyxia.mp4}
 ```
 [Lien vers la vidéo](http://minio.lab.sspcloud.fr/h4njlg/public/test.mp4)
 
@@ -154,33 +155,65 @@ header-includes: |
 "accessKeyId": {
   "description": "AWS Access Key",
   "type": "string",
-  "x-form": {
-    "value": "{{s3.AWS_ACCESS_KEY_ID}}"
-  },
-  "hidden": {
-    "value": false,
-    "path": "s3/enabled"
+  "x-onyxia": {
+    "overwriteDefaultWith": "{{s3.AWS_ACCESS_KEY_ID}}"
   }
 }
 ```
 
-## Fonctionnement: mécanisme de découverte
+## Fonctionnement: Surcharge des schémas
 
-Utilisation de la fonction `lookup` de Helm
+### Valeurs par défaut du catalogue
 
-```go
-{{ range $index, $secret := (lookup "v1" "Secret" $namespace "").items }}
-{{- if (index $secret "metadata" "annotations") }}
-{{- if and (index $secret "metadata" "annotations" "onyxia/discovery") (eq "mongodb" (index $secret "metadata"
-"annotations" "onyxia/discovery" | toString)) }}
+```json
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "x-onyxia": {
+       "overwriteSchemaWith": "ide/role.json"
+    },
+    "properties": {
+        "enabled": {
+            "type": "boolean",
+            "default": true
+        },
+        "role": {
+            "type": "string",
+            "default": "view",
+            "enum": ["view", "edit", "admin" ]
+        }
+    }
+}
 ```
+
+## Fonctionnement: Surcharge des schémas
+
+### Valeurs surchargées
+
+```json
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "enabled": {
+            "const": true,
+        },
+        "role": {
+            "type": "string",
+            "const": "view"
+        }
+    }
+}
+```
+
 
 ## Autres fonctionnalités 
 
 * Lien partageable pour lancement de services
 * Gestion de projet/groupe
 * Possibilité d'avoir son propre catalogue (*simple* dépot de chart Helm)
-* Restriction sur le lancement de service 
+* Découverte des services existants (pgadmin)
+* Restriction sur le lancement de service
 
 ```yaml
  roles:
