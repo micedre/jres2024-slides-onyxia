@@ -8,6 +8,12 @@ Pour obtenir le pdf (avec pandoc + miktex sur windows).
 pandoc -s --dpi=300 --slide-level 2 --toc --listings --shift-heading-level=0 --data-dir="pandoc" --pdf-engine "lualatex" -f markdown+pipe_tables+yaml_metadata_block+implicit_figures+smart+fenced_divs+strikeout+emoji+raw_attribute -V classoption:aspectratio=169 --template default_mod.latex -t beamer -o prez.pdf .\prez.md
 ```
 
+For pandoc version 3.6 :
+
+```sh
+pandoc -s --dpi=300 --slide-level 2 --toc --listings --shift-heading-level=0 --data-dir="pandoc" --pdf-engine "lualatex" -f markdown+pipe_tables+yaml_metadata_block+implicit_figures+smart+fenced_divs+strikeout+emoji+raw_attribute -V classoption:aspectratio=169 --template default_mod3.6.latex -t beamer -o prez.pdf .\prez.md
+```
+
 * Utilisation du theme [`moloch`](https://github.com/jolars/moloch)
 * Font Noto de google (+ Noto Emoji)
 * Ajout des vidéos (sans flash) grace à [cette réponse sur stackexchange](https://tex.stackexchange.com/a/516102)
