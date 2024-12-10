@@ -1,0 +1,295 @@
+$passoptions.latex()$
+\documentclass[
+$if(fontsize)$
+  $fontsize$,
+$endif$
+  ignorenonframetext,
+$if(handout)$
+  handout,
+$endif$
+$if(aspectratio)$
+  aspectratio=$aspectratio$,
+$endif$
+$if(babel-lang)$
+  $babel-lang$,
+$endif$
+$for(classoption)$
+  $classoption$$sep$,
+$endfor$
+]{$documentclass$}
+$if(geometry)$
+\geometry{$for(geometry)$$geometry$$sep$,$endfor$}
+$endif$
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \embedvideo{<poster or text>}{<video file (MP4+H264)>}
+% \embedvideo*{...}{...}                     % auto-play
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[bigfiles]{pdfbase}
+\ExplSyntaxOn
+\NewDocumentCommand\embedvideo{smm}{
+  \group_begin:
+  \leavevmode
+  \tl_if_exist:cTF{file_\file_mdfive_hash:n{#3}}{
+    \tl_set_eq:Nc\video{file_\file_mdfive_hash:n{#3}}
+  }{
+    \IfFileExists{#3}{}{\GenericError{}{File~`#3'~not~found}{}{}}
+    \pbs_pdfobj:nnn{}{fstream}{{}{#3}}
+    \pbs_pdfobj:nnn{}{dict}{
+      /Type/Filespec/F~(#3)/UF~(#3)
+      /EF~<</F~\pbs_pdflastobj:>>
+    }
+    \tl_set:Nx\video{\pbs_pdflastobj:}
+    \tl_gset_eq:cN{file_\file_mdfive_hash:n{#3}}\video
+  }
+  %
+  \pbs_pdfobj:nnn{}{dict}{
+    /Type/RichMediaInstance/Subtype/Video
+    /Asset~\video
+    /Params~<</FlashVars (
+      source=#3&
+      skin=SkinOverAllNoFullNoCaption.swf&
+      skinAutoHide=true&
+      skinBackgroundColor=0x5F5F5F&
+      skinBackgroundAlpha=0.75
+    )>>
+  }
+  %
+  \pbs_pdfobj:nnn{}{dict}{
+    /Type/RichMediaConfiguration/Subtype/Video
+    /Instances~[\pbs_pdflastobj:]
+  }
+  %
+  \pbs_pdfobj:nnn{}{dict}{
+    /Type/RichMediaContent
+    /Assets~<<
+      /Names~[(#3)~\video]
+    >>
+    /Configurations~[\pbs_pdflastobj:]
+  }
+  \tl_set:Nx\rmcontent{\pbs_pdflastobj:}
+  %
+  \pbs_pdfobj:nnn{}{dict}{
+    /Activation~<<
+      /Condition/\IfBooleanTF{#1}{PV}{XA}
+      /Presentation~<</Style/Embedded>>
+    >>
+    /Deactivation~<</Condition/PI>>
+  }
+  %
+  \hbox_set:Nn\l_tmpa_box{#2}
+  \tl_set:Nx\l_box_wd_tl{\dim_use:N\box_wd:N\l_tmpa_box}
+  \tl_set:Nx\l_box_ht_tl{\dim_use:N\box_ht:N\l_tmpa_box}
+  \tl_set:Nx\l_box_dp_tl{\dim_use:N\box_dp:N\l_tmpa_box}
+  \pbs_pdfxform:nnnnn{1}{1}{}{}{\l_tmpa_box}
+  %
+  \pbs_pdfannot:nnnn{\l_box_wd_tl}{\l_box_ht_tl}{\l_box_dp_tl}{
+    /Subtype/RichMedia
+    /BS~<</W~0/S/S>>
+    /Contents~(embedded~video~file:#3)
+    /NM~(rma:#3)
+    /AP~<</N~\pbs_pdflastxform:>>
+    /RichMediaSettings~\pbs_pdflastobj:
+    /RichMediaContent~\rmcontent
+  }
+  \phantom{#2}
+  \group_end:
+}
+\ExplSyntaxOff
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newif\ifbibliography
+$if(background-image)$
+\usebackgroundtemplate{%
+  \includegraphics[width=\paperwidth]{$background-image$}%
+}
+% In beamer background-image does not work well when other images are used, so this is the workaround
+\pgfdeclareimage[width=\paperwidth,height=\paperheight]{background}{$background-image$}
+\usebackgroundtemplate{\pgfuseimage{background}}
+$endif$
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbols$if(navigation)$$navigation$$else$empty$endif$
+$--
+$-- section numbering
+$--
+$if(numbersections)$
+$else$
+% remove section numbering
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{section title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{subsection title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+$endif$
+$for(beameroption)$
+\setbeameroption{$beameroption$}
+$endfor$
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+$if(section-titles)$
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+$endif$
+$fonts.latex()$
+$-- Set Beamer theme before user font settings so they can override theme
+$if(theme)$
+\usetheme[$for(themeoptions)$$themeoptions$$sep$,$endfor$]{$theme$}
+$endif$
+$if(colortheme)$
+\usecolortheme[$for(colorthemeoptions)$$colorthemeoptions$$sep$,$endfor$]{$colortheme$}
+$endif$
+$if(fonttheme)$
+\usefonttheme[$for(fontthemeoptions)$$fontthemeoptions$$sep$,$endfor$]{$fonttheme$}
+$endif$
+$if(mainfont)$
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+$endif$
+$if(innertheme)$
+\useinnertheme[$for(innerthemeoptions)$$innerthemeoptions$$sep$,$endfor$]{$innertheme$}
+$endif$
+$if(outertheme)$
+\useoutertheme[$for(outerthemeoptions)$$outerthemeoptions$$sep$,$endfor$]{$outertheme$}
+$endif$
+$font-settings.latex()$
+$common.latex()$
+$for(header-includes)$
+$header-includes$
+$endfor$
+$after-header-includes.latex()$
+$hypersetup.latex()$
+
+$if(title)$
+\title$if(shorttitle)$[$shorttitle$]$endif${$title$$if(thanks)$\thanks{$thanks$}$endif$}
+$endif$
+$if(subtitle)$
+\subtitle$if(shortsubtitle)$[$shortsubtitle$]$endif${$subtitle$}
+$endif$
+\author$if(shortauthor)$[$shortauthor$]$endif${$for(author)$$author$$sep$ \and $endfor$}
+\date$if(shortdate)$[$shortdate$]$endif${$date$}
+$if(institute)$
+\institute$if(shortinstitute)$[$shortinstitute$]$endif${$for(institute)$$institute$$sep$ \and $endfor$}
+$endif$
+$if(titlegraphic)$
+\titlegraphic{
+$for(titlegraphic)$
+  \includegraphics$if(titlegraphicoptions)$[$for(titlegraphicoptions)$$titlegraphicoptions$$sep$, $endfor$]$endif${$titlegraphic$}$sep$\enspace
+$endfor$}
+$endif$
+$if(logo)$
+\logo{\includegraphics{$logo$}}
+$endif$
+
+\lstset{literate=
+  {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+  {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+  {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+  {À}{{\`A}}1 {È}{{\`E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+  {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+  {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+  {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+  {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+  {ã}{{\~a}}1 {ẽ}{{\~e}}1 {ĩ}{{\~i}}1 {õ}{{\~o}}1 {ũ}{{\~u}}1
+  {Ã}{{\~A}}1 {Ẽ}{{\~E}}1 {Ĩ}{{\~I}}1 {Õ}{{\~O}}1 {Ũ}{{\~U}}1
+  {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+  {ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
+  {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {Ø}{{\O}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+  {€}{{\euro}}1 {£}{{\pounds}}1 {«}{{\guillemotleft}}1
+  {»}{{\guillemotright}}1 {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1 {¡}{{!`}}1 {-}{{-}}1
+}
+
+\begin{document}
+$if(title)$
+\frame{\titlepage}
+$if(abstract)$
+\begin{abstract}
+$abstract$
+\end{abstract}
+$endif$
+$endif$
+
+$for(include-before)$
+$include-before$
+
+$endfor$
+$if(toc)$
+$if(toc-title)$
+\renewcommand*\contentsname{$toc-title$}
+$endif$
+\begin{frame}[allowframebreaks]
+$if(toc-title)$
+  \frametitle{$toc-title$}
+$endif$
+  \setcounter{tocdepth}{$toc-depth$}
+  \tableofcontents
+\end{frame}
+\setcounter{tocdepth}{$toc-depth$}
+\tableofcontents
+}
+$endif$
+$if(lof)$
+\listoffigures
+$endif$
+$if(lot)$
+\listoftables
+$endif$
+$if(linestretch)$
+\setstretch{$linestretch$}
+$endif$
+$body$
+
+$if(natbib)$
+$if(bibliography)$
+$if(biblio-title)$
+$if(has-chapters)$
+\renewcommand\bibname{$biblio-title$}
+$else$
+\renewcommand\refname{$biblio-title$}
+$endif$
+$endif$
+\begin{frame}[allowframebreaks]{$biblio-title$}
+  \bibliographytrue
+  \bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}
+\end{frame}
+
+$endif$
+$endif$
+$if(biblatex)$
+\begin{frame}[allowframebreaks]{$biblio-title$}
+  \bibliographytrue
+  \printbibliography[heading=none]
+\end{frame}
+
+$endif$
+$for(include-after)$
+$include-after$
+
+$endfor$
+\end{document}
