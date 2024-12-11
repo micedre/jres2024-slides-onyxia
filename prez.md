@@ -101,6 +101,18 @@ header-includes: |
 - Favorisant les bonnes pratiques de séparation code/data/traitement
 :::
 
+
+## Nouvelle solution
+
+::: {.block}
+###
+
+- Moins couteuse pour l'exploitation (uniformisation)
+- Proposant une meilleure allocation des ressources et leur partage
+- Favorisant la reproductibilité
+- Favorisant les bonnes pratiques de séparation code/data/traitement
+:::
+
 ➡️ 
 
 ![](img/kube-git-s3-transparent.png){height=50%}
@@ -127,24 +139,25 @@ header-includes: |
 - Pas d'enfermement dans une solution
 - Cloud Native
 - 100% Open Source (MIT)
-- Déploiement facile
+- Déploiement facile 
 
 
 ## Onyxia, c'est quoi ?
 
-- Une application web permettant le déploiement de service sur cluster kubernetes
+- Une application web permettant le déploiement de service sur un cluster kubernetes
 - Un catalogue de services spécialement construit pour l'intégration de services externes (Stockage Objet, Gestion de secrets, Git...)
 - Un catalogue de formation
 
 ![](img/interface-onyxia.png){height=50%}
 
 
-## Démo
+## Les grandes fonctionnalités
 
 ```{=latex}
 \embedvideo{\includegraphics[page=1,height=0.8\textheight]{img/interface-onyxia.png}}{img/demo-onyxia.mp4}
 ```
-[Lien vers la vidéo](http://minio.lab.sspcloud.fr/h4njlg/public/test.mp4)
+[Lien vers la vidéo](https://github.com/micedre/jres2024-slides-onyxia/blob/main/img/demo-onyxia.mp4)
+
 
 ## Fonctionnement: configuration des services
 
@@ -160,6 +173,15 @@ header-includes: |
   }
 }
 ```
+
+## Fonctionnement: catalogue personnalisé
+
+* Je veux fournir un service personnalisé à mes utilisateurs
+    * Package en chart helm
+    * Fourniture d'un schema prenant en compte les parametres de l'utilisateurs (git, s3, vault)
+
+![](img/chart-custom.png){height=60%}
+
 
 ## Fonctionnement: Surcharge des schémas
 
@@ -315,7 +337,7 @@ header-includes: |
  - Utilisation de gitea, drone-ci et argocd pour développement collaboratif et déploiement en continue sur kubernetes sous forme de chart helm
 
 ### Démarrage d'environnement de formation préconfiguré 
- - Lien autosuffisant vers un service Onyxia ((python + extensions + notebooks) donné aux stagiaire
+ - Lien autosuffisant vers un service Onyxia (python + extensions + notebooks) donné aux stagiaire
 
 
 
@@ -341,7 +363,7 @@ header-includes: |
 
 - Compétences Kubernetes à acquérir
 - Accompagnement des utilisateurs (*Comment j'accède en ssh ?*)
-- Expliuer les bonnes pratiques
+- Expliquer les bonnes pratiques
 - Maitriser l'ensemble
 
 ### Perspectives
@@ -352,6 +374,26 @@ header-includes: |
 - Ajout de formations spécifiques
 
 
-## Conclusion
+## Venez voir
 
-**Pour le GENES, Onyxia a permis une modernisation franche de son offre scientifique.**
+:::: columns
+
+::: {.column width=50%}
+
+### SSPCLOUD
+
+<https://datalab.sspcloud.fr>
+
+![](img/qr-code-sspcloud.png){height=60%}
+
+:::
+
+::: {.column width=50%}
+
+### Slack Onyxia
+
+![](img/qr-code-slack.png){height=60%}
+
+:::
+
+::::
